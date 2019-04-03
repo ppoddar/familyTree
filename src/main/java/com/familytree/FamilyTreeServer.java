@@ -21,9 +21,18 @@ import org.slf4j.LoggerFactory;
 import com.familytree.model.Family;
 import com.familytree.model.Person;
 
-
+/**
+ * Builds and manages a family tree which is a graph of {@link Person}.
+ * This server interacts with Neo4j (remote) database in a 
+ * {@link Session session}. 
+ * The database session is configured either with a properties file or
+ * properties directly. 
+ * 
+ * @author ppoddar
+ *
+ */
 public class FamilyTreeServer {
-	Session session;
+	private Session session;
 	private static final String PACKAGES = "com.familytree.model";
 	private static final Logger logger = LoggerFactory.getLogger(FamilyTreeServer.class);
 	
@@ -63,11 +72,18 @@ public class FamilyTreeServer {
 	}
 
 	
-	
+	/**
+	 * gets session used by this receiver
+	 * @return
+	 */
 	public Session getSession() {
 		return session;
 	}
 	
+	/**
+	 * sets session to be used by this receiver
+	 * @return
+	 */
 	public FamilyTreeServer setSession(Session s) {
 		session = s;
 		return this;
@@ -75,7 +91,7 @@ public class FamilyTreeServer {
 	
 	
 	/**
-	 * add person.
+	 * add given person to a family.
 	 * 
 	 * @param p must not be null. 
 	 */
@@ -84,39 +100,48 @@ public class FamilyTreeServer {
 	}
 	
 	
+	/**
+	 * add given family. The family is merged by name. 
+	 * So if this method is invoked multiple times with family of same name,
+	 * a single family would be created.
+	 * 
+	 * @param p must not be null. 
+	 * @see GraphQueries#ADD_FAMILY
+	 */
 	public <T> void addFamily(Family f) {
 		assert f != null;
 		Map<String, Object> parameters = new HashMap<>();
 		parameters.put("name", f.getName());
 		session.query(GraphQueries.ADD_FAMILY, parameters);
-//		session.save(f);
 	}
 	
 	/**
 	 * find family by given name.
 	 * @param name
-	 * @return
+	 * @return a family
+	 * @throws RuntimeException is no family of given name exists
 	 */
 	public Family getFamilyByName(String name) {
 		Map<String, Object> params = new HashMap<>();
 		params.put("name", name);
 		Filter filter = new Filter("name", ComparisonOperator.EQUALS, name);
 		Collection<Family> f = session.loadAll(Family.class, filter);
-		Iterator<Family> it = f.iterator();
-		if (it.hasNext()) return it.next();
-		throw new RuntimeException("family with name [" + name + "] not found");
+		if (f.isEmpty()) {
+			throw new RuntimeException("family with name [" + name + "] not found");
+		}
+		return f.iterator().next();
 	}
 	
 	/**
 	 * find person(s) by given first name.
-	 * @param name
-	 * @return
+	 * @param firstName 
+	 * @return zero or more Person with given first name
 	 */
-	public Iterable<Person> getPersonsByFirstName(String name) {
+	public Iterable<Person> getPersonsByFirstName(String firstName) {
 		Map<String, Object> params = new HashMap<>();
-		params.put("firstName", name);
+		params.put("firstName", firstName);
 		
-		Filter filter = new Filter("firstName", ComparisonOperator.EQUALS, name);
+		Filter filter = new Filter("firstName", ComparisonOperator.EQUALS, firstName);
 		Collection<Person> persons = session.loadAll(Person.class, filter, 2);
 		return persons;
 	}
@@ -126,11 +151,11 @@ public class FamilyTreeServer {
 	 * @param name
 	 * @return
 	 */
-	public Iterable<Person> getPersonsByLastName(String name) {
+	public Iterable<Person> getPersonsByLastName(String lastName) {
 		Map<String, Object> params = new HashMap<>();
-		params.put("lastName", name);
+		params.put("lastName", lastName);
 		
-		Filter filter = new Filter("lastName", ComparisonOperator.EQUALS, name);
+		Filter filter = new Filter("lastName", ComparisonOperator.EQUALS, lastName);
 		Collection<Person> persons = session.loadAll(Person.class, filter, 2);
 		return persons;
 	}
@@ -164,6 +189,7 @@ public class FamilyTreeServer {
 	public int countFamily() {
 		return count(GraphQueries.COUNT_FAMILY);
 	}
+	
 	/**
 	 * count number of persons
 	 * @return

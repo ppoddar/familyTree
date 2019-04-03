@@ -1,46 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<!--  ======================================================== -->
+<!--  Maven project to build, test and deploy FamilyTree       -->
+<!--  ======================================================== -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>chorus</groupId>
 	<artifactId>familytree</artifactId>
-	<version>0.0.1</version>
+	<version>0.0.2</version>
 	<packaging>war</packaging>
+	
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
 	</properties>
+	
 	<dependencies>
-		<!-- https://mvnrepository.com/artifact/javax.servlet/javax.servlet-api -->
+<!--   ============== Servlet ================== -->		
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
 			<version>4.0.0</version>
 			<scope>provided</scope>
 		</dependency>
-
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.12</version>
-			<scope>test</scope>
-		</dependency>
-
+<!--   ============== Neo4j ================== -->		
 		<dependency>
 			<groupId>org.neo4j</groupId>
 			<artifactId>neo4j-ogm-core</artifactId>
 			<version>3.1.7</version>
 		</dependency>
-
-
 		<dependency>
 			<groupId>org.neo4j</groupId>
 			<artifactId>neo4j-ogm-bolt-driver</artifactId>
 			<version>3.1.7</version>
 		</dependency>
-
+<!--   ============== JSON Mapping ================== -->		
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-core</artifactId>
@@ -51,6 +47,7 @@
 			<artifactId>jackson-databind</artifactId>
 			<version>2.9.8</version>
 		</dependency>
+<!--   ============== Logging ================== -->		
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
@@ -58,24 +55,24 @@
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-simple</artifactId>
-			<version>1.7.26</version>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.7.5</version>
 		</dependency>
+		
+<!--   ============== Testing ================== -->		
 		<dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-core</artifactId>
-			<version>2.11.2</version>
-			<scope>runtime</scope>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.12</version>
+			<scope>test</scope>
 		</dependency>
-
 	</dependencies>
 
 	<build>
 		<plugins>
-			<!-- <plugin> <groupId>org.codehaus.mojo</groupId> <artifactId>exec-maven-plugin</artifactId> 
-				<version>1.6.0</version> <configuration> <mainClass>com.familytree.web.Main</mainClass> 
-				</configuration> <executions> <execution> <id>run-tomcat</id> <phase>deploy</phase> 
-				<goals> <goal>java</goal> </goals> </execution> </executions> </plugin> -->
+<!--   ======= The WAR built is deployed in a tomcat server  ===== -->
+<!--              $ mvn package tomcat7:run                        -->
+<!-- ============================================================= -->				
 			<plugin>
 				<groupId>org.apache.tomcat.maven</groupId>
 				<artifactId>tomcat7-maven-plugin</artifactId>
@@ -87,7 +84,9 @@
 					<tomcatWebXml></tomcatWebXml>
 				</configuration>
 			</plugin>
-
+<!--   ======= The unit tests exclude web oriented tests  ===== -->				
+<!--              $ mvn test                                    -->
+<!-- ============================================================= -->				
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
@@ -99,6 +98,9 @@
 					</excludes>
 				</configuration>
 			</plugin>
+<!--   ======= The integration tests include web oriented tests  ===== -->				
+<!--              $ mvn verify                        -->
+<!-- ============================================================= -->				
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-failsafe-plugin</artifactId>

@@ -17,6 +17,13 @@ import com.familytree.model.Person;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+/**
+ * Tests FamilyTree.
+ * Each test uses a clean database.
+ * 
+ * @author ppoddar
+ *
+ */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class TestFamilyTree {
     private static FamilyTreeServer server;
@@ -37,7 +44,7 @@ public class TestFamilyTree {
     }
     
     @Test
-    public void test01CreateFamilyMerges() {
+    public void test01FamiliesAreMergedByName() {
     		// save three instances but two have same name
 		Family f1 = new Family("f1");
 		Family f2 = new Family("f1");
@@ -75,42 +82,44 @@ public class TestFamilyTree {
 		
 			server.addPerson(p);
 		}
-		Iterable<Person> members = server.getFamilyMembers(familyName);
-		
-		assertEquals(Nmember, iterate(members, false));
+//		Iterable<Person> members = server.getFamilyMembers(familyName);
+//		
+//		assertEquals(Nmember, iterate(members, false));
+		assertEquals(Nmember, server.countPerson());
+		assertEquals(1, server.countFamily());
 		
 	}
 	
 	
 	
 	@Test
-	public void test06Relations() {
+	public void test06RelationsSaveClosure() {
 		String familyName = "Related-Family";
 		Family family = new Family(familyName);
-		ObjectMapper mapper = new ObjectMapper();
-		ObjectNode a = mapper.createObjectNode();
-		a.put("first-name", "a");
-		a.put("last-name", "");
-		ObjectNode b = mapper.createObjectNode();
-		b.put("first-name", "b");
-		b.put("last-name", "");
+		Person mother = createPerson("M", family);
+		Person child = createPerson("C", family);
+		mother.addChild(child);
 		
-		Person father = new Person(a).setFamily(family);
-		Person child = new Person(b).setFamily(family);
-		father.addChild(child);
-		
-		server.addPerson(father);
+		server.addPerson(mother);
 		
 		assertEquals(2, server.countPerson());
 		
-		Person f = server.getPersonsByFirstName("a").iterator().next();
-		Person s = server.getPersonsByFirstName("b").iterator().next();
+		Person m = server.getPersonsByFirstName("M").iterator().next();
+		Person c = server.getPersonsByFirstName("C").iterator().next();
 		
-		assertEquals(s.getMother(), f);
+		assertEquals(c.getMother(), m);
 		
 		
 	}
 	
+	Person createPerson(String firstName, Family family) {
+		ObjectMapper mapper = new ObjectMapper();
+		ObjectNode a = mapper.createObjectNode();
+		a.put("first-name", firstName);
+		a.put("last-name", "");
+		Person p = new Person(a).setFamily(family);
+		return p;
+	}
 	
 	<T> int iterate(Iterable<T> coll, boolean print) {
 		int i = 0;
