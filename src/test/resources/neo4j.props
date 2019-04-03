@@ -1,0 +1,7 @@
+URI=bolt://localhost:7687/
+username=neo4j
+password=passw0rd
+
+
+#server_root_uri=bolt://localhost:7687/
+
