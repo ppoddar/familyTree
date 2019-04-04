@@ -1,0 +1,38 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "family": {
+	    "title": "Family",
+    		"description": "A family",
+   		"type": "object",
+    		"properties": {
+        		"id": {
+            "type": "integer"
+        		},
+        		"name": {
+            "description": "Name of the family",
+            "type": "string"
+        		}
+    		},
+    		"required": ["name"]
+    	},
+    	    "person": {
+	    "title": "Person",
+    		"description": "A person",
+   		"type": "object",
+    		"properties": {
+        		"id": {
+            "type": "integer"
+        		},
+        		"firstname": {
+            "description": "Name of the family",
+            "type": "string"
+        		},
+         	"lastname": {
+            "description": "Name of the family",
+            "type": "string"
+        		}
+    		},
+    		"required": ["firstname", "lastname"]
+    	}
+    	
+}

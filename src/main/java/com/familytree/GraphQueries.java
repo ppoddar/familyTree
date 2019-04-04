@@ -11,7 +11,7 @@ public class GraphQueries {
 	 */
 	public static final String ADD_PERSON = "MATCH (p:Person)"
 			+ " MATCH (f:Family {name:{name}})"
-			+ " MERGE (p)-[:FAMILY]-(f)";
+			+ " MERGE (p)-[:Family]-(f)";
 	public static final String FETCH_PERSON = "";
 	
 	/**
@@ -22,7 +22,7 @@ public class GraphQueries {
 	
 	public static final String GET_PERSONS_BY_FAMILY_NAME
 		= "START n=node(*)"
-		+ " MATCH (n)-[:FAMILY]-(f) "
+		+ " MATCH (n:Person)-[:FAMILY]->(f) "
 		+ " WHERE f.name= {name}"
 		+ " RETURN n";
 	

@@ -1,3 +1,6 @@
-Personid:ID,firstname,lastname,:LABEL
-R,ramen,poddar,R
-P,pinaki,poddar,P
+:ID,firstname,lastname,male:boolean,:LABEL
+3,ramen,poddar,true,Person
+4,pinaki,poddar,true,Person
+5,tapan,poddar,true,Person
+6,mallika,poddar,false,Person
+7,jharna,poddar,false,Person

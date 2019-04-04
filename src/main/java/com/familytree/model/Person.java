@@ -6,6 +6,7 @@ import java.util.List;
 import org.neo4j.ogm.annotation.GeneratedValue;
 import org.neo4j.ogm.annotation.Id;
 import org.neo4j.ogm.annotation.NodeEntity;
+import org.neo4j.ogm.annotation.Property;
 import org.neo4j.ogm.annotation.Relationship;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -14,6 +15,7 @@ import com.fasterxml.jackson.databind.JsonNode;
  * Person must have a first and last name.
  * 
  * Annotated with Neo4j-OGM annotations.
+ * 
  * @author ppoddar
  *
  */
@@ -21,8 +23,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 public class Person {
 	@Id @GeneratedValue
 	Long id;
-	String firstName;
-	String lastName;
+	@Property
+	String firstname;
+	@Property
+	String lastname;
+	@Property
 	boolean male;
 	@Relationship(type="FAMILY")
 	Family family;
@@ -32,14 +37,8 @@ public class Person {
 	Person mother;
 	@Relationship(type="SPOUSE")
 	Person spouse;
-	@Relationship(type="CHILDREN")
-	List<Person> children;
-	
+
 	public Person() {
-		
-	}
-	
-	public Person(String name) {
 		
 	}
 	
@@ -52,8 +51,8 @@ public class Person {
 	public Person(JsonNode node) {
 		assert node.has("first-name") : "data " + node + " does not have first-name";
 		assert node.has("last-name");
-		this.firstName = node.path("first-name").asText();
-		this.lastName  = node.path("last-name").asText();
+		this.firstname = node.path("first-name").asText();
+		this.lastname  = node.path("last-name").asText();
 		String gender = node.path("gender").asText();
 		this.male = "MALE".equals(gender.toUpperCase())
      			 || "M".equals(gender.toUpperCase());
@@ -70,15 +69,15 @@ public class Person {
 		assert child.father == null;
 		assert child.mother == null;
 		
-		if (children == null) {
-			children = new ArrayList<Person>();
-		}
-		children.add(child);
 		if (isMale()) {
 			child.father = this;
 		} else {
 			child.mother = this;
 		}
+	}
+	
+	public Long getId() {
+		return id;
 	}
 	
 	public Person setFamily(Family f) {
@@ -101,12 +100,23 @@ public class Person {
 		return male;
 	}
 	
-	public String getName() {
-		return firstName + " " + lastName;
+	public void setFirstname(String f) {
+		firstname = f;
+		
+	}
+	public void setLastname(String l) {
+		lastname = l;
+		
+	}
+	public String getFirstname() {
+		return firstname;
+	}
+	public String getLastname() {
+		return lastname;
 	}
 	
 	public String toString() {
-		return getName();
+		return firstname + " " + lastname;
 	}
 	
 }

@@ -22,7 +22,7 @@ public class RequestPattern {
 	private static String OPEN_CURLY_BRACE = "{";
 	private static String CLOSE_CURLY_BRACE = "}";
 	private static String WILDCARD = "*";
-	private static final Logger logger = LoggerFactory.getLogger(FamilyTreeServer.class);
+	private static final Logger logger = LoggerFactory.getLogger(RequestPattern.class);
 
 	/**
 	 * create a request path pattern with a method to invoke and a path.
@@ -45,7 +45,7 @@ public class RequestPattern {
 	 */
 	public Object invoke(HttpServlet servlet, HttpServletRequest req, HttpServletResponse res)
 	   throws Exception {
-		logger.info("invoke " + this + " with parameters " + params);
+		logger.debug("invoke " + this + " with parameters " + params);
 		return method.invoke(servlet, toArgs(params));
 	}
 	
@@ -57,9 +57,10 @@ public class RequestPattern {
 		if (path.startsWith(FORWARD_SLASH)) path = path.substring(1);
 		String[] patterns = pathPattern.split(FORWARD_SLASH);
 		String[] segments = path.split(FORWARD_SLASH);
-		for (int i = 0; i < patterns.length; i++) {
+		int i = 0;
+		for (; i < patterns.length; i++) {
 			if (i >= segments.length) {
-				logger.info(this + " does not match shorter [" + path + "]");
+				logger.debug(this + " does not match shorter [" + path + "]");
 				return false;
 			}
 			String pattern = patterns[i];
@@ -69,12 +70,16 @@ public class RequestPattern {
 			} else if (isAny(pattern) || pattern.equals(seg)) {
 				continue;
 			} else {
-				logger.info(this + " does not match [" + path + "] "
+				logger.debug(this + " does not match [" + path + "] "
 						+ "" + i + "-th segment [" + seg + "]");
 				return false;
 			}
 		}
-		logger.info(this + " matches [" + path + "]");
+		if (i < segments.length) {
+			logger.debug(this + " does not match longer [" + path + "]");
+			return false;
+		}
+		logger.debug(this + " matches [" + path + "]");
 		return true; // all segments matched
 	}
 	

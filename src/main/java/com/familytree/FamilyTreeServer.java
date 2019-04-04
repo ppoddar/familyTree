@@ -1,5 +1,6 @@
 package com.familytree;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -66,8 +67,12 @@ public class FamilyTreeServer {
 	}
 	
 	private void createSession(ConfigurationSource source) {
-		Configuration config = new Configuration.Builder(source).build();
+		Configuration.Builder builder = new Configuration.Builder(source);
+		Configuration config = builder.build();
+		
+		logger.info("creating session at [" + config.getURI() + "]");
 		SessionFactory factory = new SessionFactory(config, PACKAGES);
+		
 		setSession(factory.openSession());
 	}
 
@@ -166,11 +171,29 @@ public class FamilyTreeServer {
 	 * @param name
 	 * @return
 	 */
-	public Iterable<Person> getFamilyMembers(String name) {
+	public List<Person> getFamilyMembers(String name) {
 		Map<String, Object> parameters = new HashMap<>();
 		parameters.put("name", name);
 		String cypher = GraphQueries.GET_PERSONS_BY_FAMILY_NAME;
-		return session.query(Person.class, cypher, parameters);
+		
+		Result result = session.query(cypher, parameters);
+		Iterator<Map<String, Object>> it = result.iterator();
+		logger.info("Cypher query [" + cypher + " with parameters " + parameters);
+		int n = 0;
+		List<Person> list = new ArrayList<Person>();
+		while (it.hasNext()) {
+			n++;
+			Map<String, Object> row = it.next();
+			logger.debug("result row " + n + " " + row);
+			String key = "n";
+			Person p = Person.class.cast(row.get(key));
+			logger.debug("row has key (" + key + ") with value " + p + " of " + p.getClass()
+			+ " and id " + p.getId());
+			Person x = session.load(Person.class, p.getId());
+			list.add(x);
+			logger.debug("person " + x);
+		}
+		return list;
 	}
 	
 	/**
@@ -202,6 +225,15 @@ public class FamilyTreeServer {
 		Result result = session.query(cypher, new HashMap<>());
 		Object value = result.queryResults().iterator().next().get("count");
 		return Long.class.cast(value).intValue();
+	}
+	
+	
+	public <T> List<T> collapse(Iterable<T> it) {
+		List<T> list = new ArrayList<T>();
+		for (T t : it) {
+			list.add(t);
+		}
+		return list;
 	}
 	
 

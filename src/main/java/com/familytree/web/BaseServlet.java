@@ -9,6 +9,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -18,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.familytree.FamilyTreeServer;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 
@@ -33,28 +35,44 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 @SuppressWarnings("serial")
 public class BaseServlet extends HttpServlet {
-	private static ObjectMapper mapper = new ObjectMapper();
+	private Serde serde;
 	private List<RequestPattern> patterns = new ArrayList<>();
-	private static final Logger logger = LoggerFactory.getLogger(FamilyTreeServer.class);
+	
+	private static final Logger logger = LoggerFactory.getLogger(BaseServlet.class);
 	private static Class<?>[] NO_ARG_TYPES = new Class<?>[0];
 	private static String JSON_MIME_TYPE = "application/json";
+	
+	@Override
+	public void init(ServletConfig config) throws ServletException {
+		super.init(config);
+		serde = new Serde();
+	}
 	/**
 	 * register given method with its arguments to a path. 
 	 * @param method
 	 * @param argTypes can be null to imply that method takes no arguments.
 	 * @param pathPattern
 	 */
-	protected void addRequestPattern(String method, Class<?>[] argTypes, 
-			String pathPattern) {
-		Method m = null;
-		if (argTypes == null) argTypes = NO_ARG_TYPES;
-		try {
-			m = getClass().getMethod(method, argTypes);
-		} catch (NoSuchMethodException ex) {
-			
-		}
+	protected void addRequestPattern(String methodName, String pathPattern) {
+		Method m = findMethod(methodName);
+		
 		RequestPattern pattern = new RequestPattern(m, pathPattern);
 		patterns.add(pattern);
+	}
+	
+	Method findMethod(String name) {
+		Method[] methods = getClass().getMethods();
+		Method result = null;
+		for (Method m : methods) {
+			if (m.getName().equals(name)) {
+				if (result != null) {
+					
+				} else {
+					result = m;
+				}
+			}
+		}
+		return result;
 	}
 	
 	/**
@@ -77,7 +95,7 @@ public class BaseServlet extends HttpServlet {
 				Object result = path.invoke(this, req, res);
 				res.setContentType(JSON_MIME_TYPE);
 				res.setStatus(200);
-				mapper.writeValue(res.getWriter(), result);
+				serde.serialize(res.getWriter(), result);
 			} catch (InvocationTargetException ex) {
 				error(ex.getTargetException(), res);
 			} catch (Exception ex) {
